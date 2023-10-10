@@ -2,7 +2,6 @@
 "@context":
 
 ontologies:
-
   - id: upheno2
     preferredPrefix: UPHENO
     title: Unified Phenotype Ontology (uPheno2)
@@ -127,13 +126,13 @@ ontologies:
     reasoner: EL
     oboSlims: false
     ontology_purl : file:/mnt/ontologies/uberon-human-view.owl
-  - id: phenio
-    preferredPrefix: PHENIO
-    description: >
-      An ontology for accessing and comparing knowledge concerning phenotypes across species and genetic backgrounds.
-    title: Phenomics Integrated Ontology
-    uri: https://github.com/monarch-initiative/phenio/releases/latest/download/phenio.owl
-    definition_property:
-      - http://purl.obolibrary.org/obo/IAO_0000115
-    oboSlims: false
-    ontology_purl : file:/mnt/ontologies/phenio.owl
+  # - id: phenio
+  #   preferredPrefix: PHENIO
+  #   description: >
+  #     An ontology for accessing and comparing knowledge concerning phenotypes across species and genetic backgrounds.
+  #   title: Phenomics Integrated Ontology
+  #   uri: https://github.com/monarch-initiative/phenio/releases/latest/download/phenio.owl
+  #   definition_property:
+  #     - http://purl.obolibrary.org/obo/IAO_0000115
+  #   oboSlims: false
+  #   ontology_purl : file:/mnt/ontologies/phenio.owl

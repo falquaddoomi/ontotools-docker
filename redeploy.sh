@@ -36,7 +36,8 @@ OXOCONFIGDIR=$CONFIGDIR/oxo-config/
 EBISPOT_OXOLOADER=ebispot/oxo-loader:stable
 EBISPOT_OXOINDEXER=ebispot/oxo-indexer:stable
 EBISPOT_OLSCONFIGIMPORTER=ebispot/ols-config-importer:stable
-EBISPOT_OLSINDEXER=ebispot/ols-indexer:stable
+EBISPOT_OLSINDEXER=ebispot/ols-indexer:stable # original
+# EBISPOT_OLSINDEXER=ols-indexer-patch:latest # patched version w/progress bar, limited logging output
 
 ######## Solr Services ########################
 OXO_SOLR=http://oxo-solr:8983/solr
@@ -47,10 +48,20 @@ OLS_SOLR=http://ols-solr:8983/solr
 ############ Pipeline ########################
 ##############################################
 
+# even pre-er pre-step: build the ols-indexer app w/a progress bar
+time (
+    cd /var/checkouts/OLS ; docker build -f ols-apps/ols-indexer/Dockerfile -t ols-indexer-pbar .
+)
+
+# pre-pre-step: while we debug the indexer, rebuild it before each run
+( cd ols-indexer-patch ; docker build -t ols-indexer-patch:latest . )
+
 # pre-step: run 'make ontologies' in an ephemeral container with the necessary tooling (i.e., robot) included
-ROBOTVERSION=${ROBOTVERSION:-v1.8.1}
+ROBOTVERSION=${ROBOTVERSION:-v1.8.3}
 ${DOCKERCMD} run \
+  --name=ols-make-ontologies \
   -v $PWD:/work -w /work \
+  -v /var/checkouts/ontotools-docker/backups/ontologies_2022-12-21/:/backups/ontologies_2022-12-21/ \
   -e ROBOTVERSION=${ROBOTVERSION} \
   -e ROBOT_JAR=https://github.com/ontodev/robot/releases/download/$ROBOTVERSION/robot.jar \
   -e ROBOT=/tools/robot \
@@ -91,9 +102,12 @@ $DOCKERRUN --network "$NETWORK" -v "$OLSCONFIGDIR":/config \
 # you could mount  here to inspect the downloaded ontologies
 # Tried this because of some irrelevant noise in the DEBUG level log, but failed. -v $OLSCONFIGDIR/simplelogger.properties:/simplelogger.properties -e JAVA_OPTS=-Dlog4j.configuration=file:/simplelogger.properties
 echo "INFO: OLS - Indexing OLS... ($SECONDS sec)"
-$DOCKERRUN --network "$NETWORK" -v "$OLS_NEO4J_DATA":/mnt/neo4j -v "$OLS_NEO4J_DOWNLOADS":/mnt/downloads \
+${DOCKERCMD} rm --force ols-indexer
+$DOCKERRUN --init --network "$NETWORK" -v "$OLS_NEO4J_DATA":/mnt/neo4j -v "$OLS_NEO4J_DOWNLOADS":/mnt/downloads \
+	   --name=ols-indexer \
            -v $VOLUMEROOT/ontologies:/mnt/ontologies \
            -e spring.data.mongodb.host=ols-mongo \
+           -e spring.profiles.active=prod \
            -e spring.data.solr.host="$OLS_SOLR" "$EBISPOT_OLSINDEXER"
 
 # 5. Now, we start the remaining services. It is important that ols-web is not running at indexing time. 

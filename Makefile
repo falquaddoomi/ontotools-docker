@@ -2,7 +2,10 @@ URIBASE = http://purl.obolibrary.org/obo
 
 # the below onts were collected from ols-config.yaml
 # (phenio is commented out until we produce a version of the file without cycles)
-ONTS = upheno2 geno upheno_patterns hp chr mondo mondo_patterns mondo-harrisons-view uberon-human-view phenio
+# ONTS = upheno2 geno upheno_patterns hp chr mondo mondo_patterns mondo-harrisons-view uberon-human-view # phenio
+
+# 2023-10-09: updating with list from ols_monarch's Makefile
+ONTS = upheno2 geno upheno_patterns hp chr mondo_patterns mondo-harrisons-view uberon-human-view
 
 #monarch
 ONTFILES = $(foreach n, $(ONTS), ontologies/$(n).owl)
@@ -35,13 +38,14 @@ ontologies/%.owl:
 	$(ROBOT) convert -I $(URIBASE)/$*.owl -o $@.tmp.owl && mv $@.tmp.owl $@
 
 ontologies/hp.owl: 
-	$(ROBOT) convert -I https://ci.monarchinitiative.org/job/hpo-pipeline-dev2/lastSuccessfulBuild/artifact/hp.owl -o $@.tmp.owl && mv $@.tmp.owl $@
+	$(ROBOT) convert -I $(URIBASE)/hp.owl -o $@.tmp.owl && mv $@.tmp.owl $@
 
 ontologies/mondo.owl: 
-	$(ROBOT) convert -I https://ci.monarchinitiative.org/job/mondo-build/lastSuccessfulBuild/artifact/src/ontology/mondo.owl -o $@.tmp.owl && mv $@.tmp.owl $@
+	$(ROBOT) convert -I $(URIBASE)/mondo.owl -o $@.tmp.owl && mv $@.tmp.owl $@
 
 ontologies/mondo-harrisons-view.owl: 
-	$(ROBOT) convert -I https://ci.monarchinitiative.org/job/mondo-build/lastSuccessfulBuild/artifact/src/ontology/modules/mondo-harrisons-view.owl -o $@.tmp.owl && mv $@.tmp.owl $@
+	$(ROBOT) convert -i /backups/ontologies_2022-12-21/mondo-harrisons-view.owl -o $@.tmp.owl && mv $@.tmp.owl $@
+	# $(ROBOT) convert -I https://ci.monarchinitiative.org/job/mondo-build/lastSuccessfulBuild/artifact/src/ontology/modules/mondo-harrisons-view.owl -o $@.tmp.owl && mv $@.tmp.owl $@
 
 ontologies/chr.owl: 
 	$(ROBOT) convert -I https://raw.githubusercontent.com/monarch-initiative/monochrom/master/chr.owl -o $@.tmp.owl && mv $@.tmp.owl $@
